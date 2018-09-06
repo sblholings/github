@@ -1,0 +1,96 @@
+---
+# Environment specific variables, replace as required 
+
+app: github #(eg:jfrog)
+env: dev #(eg: dev/val) 
+vpc_id: vpc-16128870 # should replace for PROD
+keypair: sydneyb_unomee_nonprod   # should create manually
+vpc_name: vpc-ew1-2b82-devops-dev # should replace
+private_subnet_1: subnet-9833d0c2 # should replace subnet id for PROD
+private_subnet_2: subnet-d8bb1bbe # should replace subnet id for PROD
+private_subnet_3: subnet-e20dbbaa # should replace subnet id for PROD
+local_subnet_1: subnet-4032d11a # should replace subnet id for PROD (RDS)
+local_subnet_2: subnet-a3b616c5 # should replace subnet id for PROD (RDS)
+local_subnet_3: subnet-85f243cd # should replace subnet id for PROD (RDS)
+
+rds_subnet_group_name: "{{ vpc_name }}-subnet-group"  # should create manually
+vpc_endpoint_service: com.amazonaws.eu-west-1.s3      # should replace
+vpc_endpoint_route: rtb-3759e54e  # should replace
+vpc_endpoint_id: vpce-8b5a96e2    # should replace
+cidr_prefix: 10.196.*.*           # should replace
+
+elb_sg_name: "{{ elb_sg.group_name }}" # should replace
+instance_type: m4.xlarge # should replace if necessary
+security_group: "{{ ec2_sg.group_name }}"
+ami_image: ami-0073b0d32b083e831
+hardened_image: ami-607d7d8a
+region: eu-west-1
+monitoring: "yes"
+instance_profile_name: role-2B82-robsrole # change for prod
+ec2_count: 1
+backup_volume_size: "800"
+volume_size: "200"
+device_name: "/dev/sdb"
+volume_type: "gp2"
+encrypted: "true" 
+delete_on_termination: "true"
+
+elb_name: "{{ app }}-elb-{{ env }}"
+elb_subnet_id:
+  - "{{ private_subnet_1 }}"
+  - "{{ private_subnet_2 }}"
+  - "{{ private_subnet_3 }}"
+elb_purge_subnets: yes
+elb_cross_az_load_balancing: yes
+elb_connection_draining_timeout: 300
+elb_scheme: "internal"
+elb_ping_protocol: https
+elb_ping_port: 443
+elb_ping_path: /status
+elb_response_timeout: 5
+elb_interval: 30
+elb_unhealthy_threshold: 2
+elb_healthy_threshold: 10
+elb_stickiness_type: "loadbalancer"
+elb_stickiness_enabled: yes
+elb_stickiness_expiration: 300
+
+elb_listeners:
+  - protocol: tcp
+    load_balancer_port: 443
+    instance_protocol: tcp
+    instance_port: 443
+ 
+  - protocol: tcp
+    load_balancer_port: 8443
+    instance_protocol: tcp
+    instance_port: 8443
+  
+  - protocol: tcp
+    load_balancer_port: 122
+    instance_protocol: tcp
+    instance_port: 122
+
+elb_stickiness:
+  type: "{{ elb_stickiness_type }}"
+  enabled: "{{ elb_stickiness_enabled }}"
+  expiration: "{{ elb_stickiness_expiration }}"
+elb_health_check:
+  ping_protocol: "{{ elb_ping_protocol }}"
+  ping_port: "{{ elb_ping_port }}"
+  ping_path: "{{ elb_ping_path }}"
+  response_timeout: "{{ elb_response_timeout }}"
+  interval: "{{ elb_interval }}"
+  unhealthy_threshold: "{{ elb_unhealthy_threshold }}"
+  healthy_threshold: "{{ elb_healthy_threshold }}"
+
+elb_url: ""
+ec2_node_name: "{{ app }}-{{ env }}"
+
+aws_timeout: 300
+
+primary_ip: "{{ primary_ec2_private_ip }}"
+
+enable_instance1: true #change to true to spin up 1 instance
+enable_instance2: true #change to true to spin up 2 instances
+enable_instance3: true #change to true to spin up 3 instances

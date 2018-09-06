@@ -1,0 +1,68 @@
+---
+#Setting up Infrastructure ie elb, primary, replica and backup nodes
+#Setting up Github management console password and uploading Github license file.
+#IMPORTANT: uploading of the license will fail if the license has expired. 
+
+  - hosts: localhost
+    connection: local
+    gather_facts: False
+    tags: service
+    vars_files:
+      
+      - env_vars/{{env_name}}.yml
+      - env_vars/lan-ips
+      - env_vars/vpc-ips
+      - env_vars/passwords.yml
+    roles:
+      - { role: elb, when: elb_url is undefined or elb_url is none or elb_url | trim == '' }
+      - { role: dns, when: elb.dns_name is undefined or elb.dns_name is none or elb.dns_name | trim == '' }
+      - { role: ec2_instance, when: instances_id is undefined or instances_id is none or instances_id | trim == '' }
+
+#Setting ssh port on both primary and replica nodes to 122 
+#setting up SSL on primary and replica nodes
+  - hosts: tag_Name_github_{{ env }}1, tag_Name_github_{{ env }}2
+    remote_user: admin
+    vars_files:
+      - env_vars/{{env_name}}.yml
+    gather_facts: False
+    roles: 
+      - ssh_port 
+      - setup_ssl 
+        
+  - hosts: tag_Name_github_{{ env }}3
+    become: true 
+    become_method: sudo
+    remote_user: aws_install
+    gather_facts: True
+    vars_files: 
+      - env_vars/{{env_name}}.yml
+    tasks:
+      - name: Stop McAfee Service 
+        service: 
+          name: isecespd
+          state: stopped 
+
+      - name: Stop other McAfee Service
+        service: 
+          name: isectpd
+          state: stopped 
+    roles: 
+      - setup_backup
+
+  - hosts: tag_Name_github_{{ env }}1, tag_Name_github_{{ env }}2
+    become: true 
+    become_method: sudo
+    remote_user: admin
+    gather_facts: False
+    vars_files: 
+      - env_vars/{{env_name}}.yml
+    tasks:
+      - name: Downloading pub key
+        copy: src=./files/id_rsa.pub dest=/home/admin/id_rsa.pub
+  
+      - name: add key to authorized keys
+        shell: cat /home/admin/id_rsa.pub >> .ssh/authorized_keys
+  
+  
+
+  

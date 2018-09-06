@@ -1,0 +1,51 @@
+---
+    
+- name: Download backup utility
+  get_url: 
+    url: https://github.com/github/backup-utils/releases/download/v2.13.1/github-backup-utils-v2.13.1.tar.gz
+    dest: /home/aws_install/github-backup-utils-v2.13.1.tar.gz
+    mode: "755"
+    owner: "aws_install"
+    group: "aws_install"
+  state: present
+
+- name: Extract github backup utility
+  shell: tar -xzvf /home/aws_install/github-backup-utils-v2.13.1.tar.gz >> /home/aws_install/tar.log #creates a tar.log file so task will not rerun again.
+  
+- name: copy backup.config-example to backup.config
+  command: cp /home/aws_install/github-backup-utils-v2.13.1/backup.config-example /home/aws_install/github-backup-utils-v2.13.1/backup.config
+  
+- name: set aws_install as owner of directory
+  file: 
+    dest: /home/aws_install/github-backup-utils-v2.13.1
+    mode: "700"
+    owner: "aws_install"
+    group: "aws_install"
+    recurse: "yes"
+
+- name: Appending dns for loadbalancer to backup.config file 
+  lineinfile:
+    path: /home/aws_install/github-backup-utils-v2.13.1/backup.config
+    regexp: '^GHE_HOSTNAME="github.example.com"'
+    line: "GHE_HOSTNAME={{ hostvars['localhost']['primary_ec2_private_ip'] }}"
+  
+- name: Appending dns for loadbalancer to backup.config file 
+  lineinfile:
+    path: /home/aws_install/github-backup-utils-v2.13.1/backup.config
+    regexp: '^GHE_NUM_SNAPSHOTS=10'
+    line: 'GHE_NUM_SNAPSHOTS=24'
+    backrefs: 'yes' 
+
+- nanme: Download and install Git 
+  yum: name=git state=latest update_cache=yes
+  
+- name: Generating RSA key for user aws_install
+  user: name=aws_install generate_ssh_key=yes
+  
+- name: Get `id_rsa.pub`
+  shell: cat /home/aws_install/.ssh/id_rsa.pub
+  register: id_rsa_pub
+
+- name: Downloading pub key
+  fetch: src=/home/aws_install/.ssh/id_rsa.pub dest=./files/id_rsa.pub flat=yes
+ 

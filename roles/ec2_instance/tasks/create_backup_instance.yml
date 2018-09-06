@@ -1,0 +1,58 @@
+---
+- name: create security group for Backup Instance
+  local_action:
+    module: ec2_group
+    name: "{{ app }}-sg-{{ env }}-ec2"
+    description: "sg for {{ app }}-ec2"
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    state: present
+    rules: "{{ vpc_routable_ips }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: "0.0.0.0/0"
+  register: ec2_sg
+
+- name: Create Backup Instance
+  ec2:
+    region: "{{ region }}"
+    group: "{{ security_group }}"
+    keypair: "{{ keypair }}"
+    instance_type: "{{ instance_type }}"
+    vpc_subnet_id: "{{ private_subnet }}"
+    image: "{{ hardened_image }}"
+    wait: True
+    instance_profile_name: "{{ instance_profile_name }}"
+    monitoring: "{{ monitoring }}"
+    wait_timeout: 600
+    volumes:
+       - volume_size: "{{ backup_volume_size }}"
+         device_name: "{{ device_name }}" 
+         volume_type: "{{ volume_type }}" 
+         encrypted: "{{ encrypted }}" 
+         delete_on_termination: "{{ delete_on_termination }}" 
+          
+    instance_tags:
+       Env: "{{ env }}"
+       Name: "{{ custom_name }}"
+    count_tag:
+       Env: "{{ env }}"
+       Name: "{{ custom_name }}"
+    exact_count: "{{ ec2_count }}"
+    
+  register: ec2_backup
+
+- name: Wait for SSH to come up
+  wait_for:
+    host: "{{ item }}"
+    port: 22
+    delay: 60
+    search_regex: OpenSSH
+    timeout: 180
+  with_items: "{{ ec2_backup.instances | get_ec2_info('private_ip') }}"
+ 
+- name: Refresh the ec2.py cache
+  shell: ./inventory/ec2.py --refresh-cache
+
+- name: Refresh Inventory
+  meta: refresh_inventory

@@ -1,0 +1,60 @@
+---
+# Update DNS record via Airbus API
+- name: create Airbus API Credentials File
+  shell:
+    cmd: |
+          expect << EOF
+          set timeout -1;
+          spawn platform-auth-cli
+          expect "Email"
+          send -- "{{ lookup('env','SERVICEUSER') }}\n"
+          expect "Password"
+          send -- "{{ lookup('env','SERVICEPW') }}\n"
+          expect "Type"
+          send -- "1\n"
+          expect eof
+          EOF
+
+- name: delay for 1 mins (allow things to start up & credentials to register)
+  wait_for: timeout=60
+  delegate_to: localhost
+
+# Airbus API call often fails when first run, so this first call 'wakes the API up'
+- name: create DNS entry for the load balancer (Wake Up Call)
+  shell:
+    cmd: |
+          echo Creating DNS entry for {{ app }}-{{ env }}.2b82.aws.cloud.airbus.corp
+          awscurl --profile production-pcp-platform --region eu-west-1 -X GET \
+               https://api.airbus.cloud/v1/applications/2b82/dns/records 
+  ignore_errors: yes
+
+- debug:
+    msg: "Create DNS record for {{ app }}-{{ env }}.2b82.aws.cloud.airbus.corp"
+    
+# Lookup the ELB DNS
+- debug:
+    msg: "ELB DNS is: {{ elb.elb.dns_name }}"
+
+- name: delay for 1 mins (allow API to wake up)
+  wait_for: timeout=60
+  delegate_to: localhost
+
+# Update DNS record via Airbus API
+- name: create or update DNS entry for the load balancer
+  shell:
+    cmd: |
+          set -x
+          id=$(awscurl --profile production-pcp-platform --region eu-west-1 -X GET \
+               https://api.airbus.cloud/v1/applications/2b82/dns/records | \
+               jq -r ' .[] | select(.name=="{{ app }}-{{ env }}") | .id')
+          echo $id
+          if [[ $id != "" ]]
+          then
+            echo Updating DNS entry for {{ app }}-{{ env }}.2b82.aws.cloud.airbus.corp using id $id
+            awscurl --profile production-pcp-platform -X PUT -d '{"name":"{{ app }}-{{ env }}","value":"{{ elb.elb.dns_name }}","type":"CNAME"}' \
+              https://api.airbus.cloud/v1/applications/2b82/dns/records/$id --region eu-west-1
+          fi
+  register: dnsout
+
+- debug:
+    var: dnsout

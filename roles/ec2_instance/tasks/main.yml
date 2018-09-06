@@ -1,0 +1,49 @@
+---
+- name: create ec2-instance with private_subnet_1
+  import_tasks: create_primary_instance.yml
+  vars:
+    private_subnet: "{{ private_subnet_1 }}"
+    custom_name: "{{ ec2_node_name }}1"
+    custom_file: "ec2_info1"
+    custom_id: "instances_id1"
+    custom_private_ip: "instances_private_ip1"
+  when: enable_instance1
+
+- add_host: name={{ item }}
+      groups=tag_Name_github-{{ env }}1
+      instance_name={{ item }}
+  with_items: "{{ ec2_primary.instances | get_ec2_info('private_ip') }}"
+
+- name: create ec2-instance with private_subnet_2
+  import_tasks: create_replica_instance.yml
+  vars:
+    private_subnet: "{{ private_subnet_2 }}"
+    custom_name: "{{ ec2_node_name }}2"
+    custom_file: "ec2_info2"
+    custom_id: "instances_id2"
+    custom_private_ip: "instances_private_ip2"
+  when: enable_instance2
+
+- add_host: name={{ item }}
+      groups=tag_Name_github-{{ env }}2
+      instance_name={{ item }}
+  with_items: "{{ ec2_replica.instances | get_ec2_info('private_ip') }}"
+  when: enable_instance2
+
+- name: create ec2-instance with private_subnet_3
+  import_tasks: create_backup_instance.yml
+  vars:
+    private_subnet: "{{ private_subnet_3 }}"
+    custom_name: "{{ ec2_node_name }}3"
+    custom_file: "ec2_info3"
+    custom_id: "instances_id3"
+    custom_private_ip: "instances_private_ip3"
+  when: enable_instance3
+
+- add_host: name={{ item }}
+      groups=tag_Name_github-{{ env }}3
+      instance_name={{ item }}
+  with_items: "{{ ec2_backup.instances | get_ec2_info('private_ip') }}"
+  when: enable_instance3
+
+

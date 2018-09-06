@@ -1,0 +1,11 @@
+---
+
+- name: Open port 443 on local firewall
+  firewalld:
+   port: 443/tcp
+   permanent: true
+   zone: public
+   state: enabled
+   immediate: yes
+  become: yes
+

@@ -1,0 +1,10 @@
+vpc_routable_ips:
+
+  - proto: all
+    cidr_ip: "10.196.64.0/24"
+  - proto: all
+    cidr_ip: "10.196.65.0/24" 
+  - proto: tcp
+    from_port: 122
+    to_port: 122
+    cidr: "10.196.66.0/24"   

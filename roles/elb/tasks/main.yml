@@ -1,0 +1,52 @@
+---
+
+- name: create security group for load balancer
+  local_action:
+    module: ec2_group
+    name: "{{ app }}-sg-{{ env }}-elb"
+    description: "sg for {{ app }}-elb" 
+    region: "{{ region }}"
+    vpc_id: "{{ vpc_id }}"
+    state: present
+    rules: "{{ internal_ips }}"
+    rules_egress:
+      - proto: all
+        cidr_ip: "0.0.0.0/0"
+  register: elb_sg
+
+- debug: var=elb_sg
+
+- name: Ensure load balancer exists
+  ec2_elb_lb:
+    name: "{{ elb_name }}"
+    security_group_ids: "{{ elb_sg.group_id }}"
+    scheme: "{{ elb_scheme }}"
+    state: present
+    region: "{{ region }}"
+    subnets: "{{ elb_subnet_id }}"
+    purge_subnets: "{{ elb_purge_subnets }}"
+    cross_az_load_balancing: "{{ elb_cross_az_load_balancing }}"
+    connection_draining_timeout: "{{ elb_connection_draining_timeout }}"
+    listeners: "{{ elb_listeners }}"
+    stickiness: "{{ elb_stickiness }}"
+    health_check: "{{ elb_health_check }}"
+  register: elb
+  tags: "{{ app }}-elb-{{ env }}"
+
+#- name: "Write ELB url to elb_info.yml file inside the env_vars directory"
+#  lineinfile:
+#    dest: "env_vars/elb_info.yml"
+#    regexp: "^elb_url"
+#    line: "elb_url: {{ '\"' + elb.elb.dns_name + '\"' }}"
+
+- set_fact:
+    elb_url: "{{ elb.elb.dns_name }}"
+
+#- include_vars: "env_vars/elb_info.yml"
+
+- name: Gather facts about the elb 
+  ec2_elb_facts:
+    names: "{{ app }}-elb-{{ env }}"
+    region: "{{ region }}"
+  register: elb_facts
+

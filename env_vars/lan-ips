@@ -1,0 +1,121 @@
+internal_ips:
+#airbus lan ips 
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "10.196.64.0/24"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "10.196.65.0/24"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "10.196.64.0/24"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "10.196.65.0/24"
+  - proto: tcp
+    from_port: 8080
+    to_port: 8080
+    cidr_ip: "10.196.64.0/24"
+  - proto: tcp
+    from_port: 8080
+    to_port: 8080
+    cidr_ip: "10.196.65.0/24"
+  - proto: tcp
+    from_port: 122
+    to_port: 122
+    cidr_ip: "10.196.66.0/24" #for backup server
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "10.196.65.0/24"
+
+    #airbus lan ips 
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "193.56.36.0/24"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "195.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "172.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "194.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "152.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "141.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "44.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "14.0.0.0/8"
+  - proto: tcp
+    from_port: 443
+    to_port: 443
+    cidr_ip: "10.0.0.0/8"
+
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "193.56.36.0/24"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "195.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "172.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "194.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "152.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "141.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "44.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "14.0.0.0/8"
+  - proto: tcp
+    from_port: 8443
+    to_port: 8443
+    cidr_ip: "10.0.0.0/8"
+  
+
+
+
+
+  
+
+
+
+
+
+

@@ -1,0 +1,21 @@
+---
+- name: copy root certificate
+  copy: src=./files/github-{{ env }}-root.crt dest=/home/admin/github-root.crt
+  state: present
+
+- name: import root certificate
+  shell: ghe-ssl-ca-certificate-install -c github-root.crt
+  state: present
+
+- name: copy ssl cert
+  copy: 
+    src: ./files/github-{{ env }}-combined.pem 
+    dest: /home/admin/github-combined.pem
+    mode: "644"
+    owner: "admin"
+    group: "admin"
+  state: present
+
+- name: run setup and restart services 
+  shell: /usr/local/share/enterprise/ghe-ssl-certificate-setup < /home/admin/github-combined.pem
+  state: present
