@@ -15,7 +15,7 @@
       - env_vars/passwords.yml
     roles:
       - { role: elb, when: elb_url is undefined or elb_url is none or elb_url | trim == '' }
-      - { role: dns, when: elb.dns_name is undefined or elb.dns_name is none or elb.dns_name | trim == '' }
+      #- { role: dns, when: elb.dns_name is undefined or elb.dns_name is none or elb.dns_name | trim == '' }
       - { role: ec2_instance, when: instances_id is undefined or instances_id is none or instances_id | trim == '' }
 
 #Setting ssh port on both primary and replica nodes to 122 
@@ -36,16 +36,7 @@
     gather_facts: True
     vars_files: 
       - env_vars/{{env_name}}.yml
-    tasks:
-      - name: Stop McAfee Service 
-        service: 
-          name: isecespd
-          state: stopped 
-
-      - name: Stop other McAfee Service
-        service: 
-          name: isectpd
-          state: stopped 
+    
     roles: 
       - setup_backup
 
